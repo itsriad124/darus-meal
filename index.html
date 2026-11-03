@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Darus Mess Meal</title>
+  <meta name="theme-color" content="#10b981">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/192/curry-rice.png">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/emoji/192/curry-rice.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hind Siliguri", sans-serif; }
+    body { background: #f3f4f6; color: #1f2937; padding: 14px; max-width: 500px; margin: 0 auto; padding-bottom: 110px; }
+    
+    header { text-align: center; margin-bottom: 14px; }
+    header h1 { font-size: 1.35rem; color: #065f46; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    header p { font-size: 0.8rem; color: #6b7280; margin-top: 3px; }
+
+    .card { background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    
+    .date-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .date-btn { background: #ecfdf5; border: 1px solid #10b981; color: #065f46; font-weight: 600; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; flex: 1; text-align: center; }
+    .date-btn.active { background: #10b981; color: white; }
+
+    .menu-title { font-weight: 700; color: #047857; margin-bottom: 8px; font-size: 0.95rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+    .menu-item { font-size: 0.85rem; margin-bottom: 6px; line-height: 1.35; }
+    .menu-item span.lbl { font-weight: 700; color: #374151; }
+
+    .member-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+    .member-row:last-child { border-bottom: none; }
+    .member-name { font-weight: 700; font-size: 0.9rem; width: 85px; color: #111827; }
+    .member-toggles { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
+    
+    .pill { border: 1px solid #d1d5db; background: #f9fafb; font-size: 0.72rem; font-weight: 600; padding: 5px 8px; border-radius: 6px; cursor: pointer; user-select: none; transition: all 0.15s; }
+    .pill.active { background: #059669; color: white; border-color: #059669; }
+    .pill.rice { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+    .pill.rice.active { background: #d97706; color: white; border-color: #b45309; }
+
+    .msg-preview { background: #e7f8e8; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; margin-top: 6px; color: #111827; }
+
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px 14px; box-shadow: 0 -3px 10px rgba(0,0,0,0.08); display: flex; gap: 8px; max-width: 500px; margin: 0 auto; z-index: 100; }
+    .send-btn-morning { flex: 1; background: #059669; color: white; border: none; font-size: 0.9rem; font-weight: 700; padding: 12px 8px; border-radius: 10px; text-align: center; cursor: pointer; text-decoration: none; box-shadow: 0 2px 6px rgba(5,150,105,0.3); }
+    .send-btn-dinner { flex: 1; background: #0284c7; color: white; border: none; font-size: 0.9rem; font-weight: 700; padding: 12px 8px; border-radius: 10px; text-align: center; cursor: pointer; text-decoration: none; box-shadow: 0 2px 6px rgba(2,132,199,0.3); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍛 দারুস মেস মিল ম্যানেজার</h1>
+    <p>সকাল ও দুপুর এবং রাতের রান্নার মেসেজ</p>
+  </header>
+
+  <!-- Date selector -->
+  <div class="card">
+    <div class="date-bar">
+      <button class="date-btn active" id="btnToday" onclick="selectDate(0)">আজ (Today)</button>
+      <button class="date-btn" id="btnTomorrow" onclick="selectDate(1)">আগামীকাল (Tomorrow)</button>
+    </div>
+    <div style="font-size:0.85rem; font-weight:700; color:#1e293b; text-align:center; margin-top:8px;" id="dateDisplay">--</div>
+  </div>
+
+  <!-- Member meal settings -->
+  <div class="card">
+    <div class="menu-title">
+      <span>👥 সদস্য মিল হিসাব</span>
+      <span style="font-size:0.75rem; color:#6b7280; font-weight:normal;">(ট্যাপ করে অন/অফ)</span>
+    </div>
+    <div id="membersContainer"></div>
+  </div>
+
+  <!-- Message Preview -->
+  <div class="card">
+    <div class="menu-title">
+      <span>📱 হোয়াটসঅ্যাপ মেসেজ প্রিভিউ</span>
+    </div>
+    <div style="font-size:0.8rem; font-weight:700; color:#065f46; margin-bottom:4px;">সকাল ও দুপুর:</div>
+    <div class="msg-preview" id="morningPreview">--</div>
+    
+    <div style="font-size:0.8rem; font-weight:700; color:#0369a1; margin-top:12px; margin-bottom:4px;">রাত:</div>
+    <div class="msg-preview" id="dinnerPreview">--</div>
+  </div>
+
+  <!-- Bottom Bar: Two distinct send buttons -->
+  <div class="bottom-bar">
+    <a href="#" class="send-btn-morning" onclick="sendWhatsApp('morning', event)">
+      সকাল ও দুপুর পাঠান
+    </a>
+    <a href="#" class="send-btn-dinner" onclick="sendWhatsApp('dinner', event)">
+      রাতের খাবার পাঠান
+    </a>
+  </div>
+
+<script>
+  const COOK_PHONE = "8801960475306";
+
+  const MENU = {
+    "SAT": { 
+      b: "ভাত + হাফ ডিম ভাজি + আলু ভর্তা", 
+      l_curry: "ডিম আলু ঘাটি",
+      l_has_dal: false,
+      d_curry: "মুরগী",
+      d_has_dal: true
+    },
+    "SUN": { 
+      b: "খিচুড়ি + আলু ভর্তা", 
+      l_curry: "মুরগী", 
+      l_has_dal: true,
+      d_curry: "সবজি + মুরগী",
+      d_has_dal: true
+    },
+    "MON": { 
+      b: "ভাত + সবজি", 
+      l_curry: "মাছ", 
+      l_has_dal: true,
+      d_curry: "ডিমের আলু ঘাটি",
+      d_has_dal: false
+    },
+    "TUE": { 
+      b: "ভাত + সবজি ভাজি", 
+      l_curry: "মুরগী (খিচুড়ি সহ)", 
+      l_has_dal: false,
+      d_curry: "মাছের চর্চরী",
+      d_has_dal: false
+    },
+    "WED": { 
+      b: "ভাত + হাফ ডিম ভাজি + আলু ভর্তা", 
+      l_curry: "মাছ", 
+      l_has_dal: true,
+      d_curry: "মুরগী",
+      d_has_dal: true
+    },
+    "THU": { 
+      b: "সবজি খিচুড়ি", 
+      l_curry: "ডিম আলু ঘাটি", 
+      l_has_dal: true,
+      d_curry: "মাছের চর্চরী",
+      d_has_dal: false
+    },
+    "FRI": { 
+      b: "ভাত + শাক/ভর্তা", 
+      l_curry: "রোস্ট (পোলাও সহ)", 
+      l_has_dal: true,
+      d_curry: "সবজি",
+      d_has_dal: true
+    }
+  };
+
+  const MEMBERS = [
+    { id: "WASEE", name_bn: "ওয়াসি" },
+    { id: "NIBIR", name_bn: "নিবিড়" },
+    { id: "ISTIAK", name_bn: "ইশতিয়াক" },
+    { id: "JIAN", name_bn: "জিয়ান" },
+    { id: "RAAD", name_bn: "রাহাদ" },
+    { id: "RIAD", name_bn: "রিয়াদ" }
+  ];
+
+  let selectedOffset = 0;
+  let state = {};
+
+  function initDefaults(dayKey, targetDate) {
+    const isThuFriSat = (dayKey === "THU" || dayKey === "FRI" || dayKey === "SAT");
+    
+    // Check if Istiak has night rice-only (Nov 2 to Nov 6)
+    const dayOfMonth = targetDate.getDate();
+    const isIstiakRiceOnlyNight = (dayOfMonth >= 2 && dayOfMonth <= 6);
+
+    return {
+      "WASEE":  { b: true,        l: true, d: true,  l_rice: true,  d_rice: true },
+      "NIBIR":  { b: false,       l: true, d: true,  l_rice: false, d_rice: false },
+      "ISTIAK": { b: isThuFriSat, l: true, d: true,  l_rice: false, d_rice: isIstiakRiceOnlyNight },
+      "JIAN":   { b: false,       l: false,d: false, l_rice: false, d_rice: false },
+      "RAAD":   { b: true,        l: true, d: false, l_rice: false, d_rice: false },
+      "RIAD":   { b: false,       l: true, d: false, l_rice: false, d_rice: false }
+    };
+  }
+
+  function getTargetDate(offset) {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return d;
+  }
+
+  function selectDate(offset) {
+    selectedOffset = offset;
+    document.getElementById("btnToday").classList.toggle("active", offset === 0);
+    document.getElementById("btnTomorrow").classList.toggle("active", offset === 1);
+    
+    const target = getTargetDate(offset);
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const dayKey = days[target.getDay()];
+    
+    state = initDefaults(dayKey, target);
+    renderUI();
+  }
+
+  function toggle(mId, meal) {
+    if (mId === "WASEE" && (meal === "l" || meal === "d")) {
+      if (!state[mId][meal]) {
+        state[mId][meal] = true;
+        state[mId][meal + "_rice"] = true;
+      } else {
+        state[mId][meal] = false;
+        state[mId][meal + "_rice"] = false;
+      }
+    } else {
+      state[mId][meal] = !state[mId][meal];
+    }
+    renderUI();
+  }
+
+  function renderUI() {
+    const target = getTargetDate(selectedOffset);
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const dayNames = { "SUN": "রবিবার", "MON": "সোমবার", "TUE": "মঙ্গলবার", "WED": "বুধবার", "THU": "বৃহস্পতিবার", "FRI": "শুক্রবার", "SAT": "শনিবার" };
+    const dayKey = days[target.getDay()];
+    const menu = MENU[dayKey];
+
+    const dateFormatted = target.toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById("dateDisplay").innerText = `${dayNames[dayKey]} (${dateFormatted})`;
+
+    const container = document.getElementById("membersContainer");
+    container.innerHTML = "";
+
+    MEMBERS.forEach(m => {
+      const s = state[m.id];
+      const row = document.createElement("div");
+      row.className = "member-row";
+
+      let lClass = "pill" + (s.l ? (s.l_rice ? " rice active" : " active") : "");
+      let lText = s.l ? (s.l_rice ? "দুপুর (ভাত)" : "দুপুর") : "দুপুর";
+
+      let dClass = "pill" + (s.d ? (s.d_rice ? " rice active" : " active") : "");
+      let dText = s.d ? (s.d_rice ? "রাত (ভাত)" : "রাত") : "রাত";
+
+      row.innerHTML = `
+        <div class="member-name">${m.name_bn}</div>
+        <div class="member-toggles">
+          <button class="pill ${s.b ? 'active' : ''}" onclick="toggle('${m.id}', 'b')">নাস্তা</button>
+          <button class="${lClass}" onclick="toggle('${m.id}', 'l')">${lText}</button>
+          <button class="${dClass}" onclick="toggle('${m.id}', 'd')">${dText}</button>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+
+    renderPreviews(menu);
+  }
+
+  function buildQuantityMessages(menu) {
+    let bCount = 0;
+    let lFull = 0, lRiceOnly = 0;
+    let dFull = 0, dRiceOnly = 0;
+
+    MEMBERS.forEach(m => {
+      const s = state[m.id];
+      if (s.b) bCount++;
+      if (s.l) {
+        if (s.l_rice) lRiceOnly++;
+        else lFull++;
+      }
+      if (s.d) {
+        if (s.d_rice) dRiceOnly++;
+        else dFull++;
+      }
+    });
+
+    const totalLunchRice = lFull + lRiceOnly;
+    const totalDinnerRice = dFull + dRiceOnly;
+
+    // Morning message (Exact format from user screenshot)
+    let morningLines = [
+      `আজকের সকাল ও দুপুরের রান্না`,
+      ``,
+      `সকালের নাস্তা:`,
+      `• ${bCount} জনের ${menu.b}`,
+      ``,
+      `দুপুরের খাবার:`,
+      `• ভাত: ${totalLunchRice} জনের`,
+      `• তরকারি: ${menu.l_curry} ${lFull} জনের`
+    ];
+    if (menu.l_has_dal) {
+      morningLines.push(`• ডাল: ${lFull} জনের`);
+    }
+
+    // Dinner message (Exact format)
+    let dinnerLines = [
+      `আজকের রাতের রান্না`,
+      ``,
+      `রাতের খাবার:`,
+      `• ভাত: ${totalDinnerRice} জনের`,
+      `• তরকারি: ${menu.d_curry} ${dFull} জনের`
+    ];
+    if (menu.d_has_dal) {
+      dinnerLines.push(`• ডাল: ${dFull} জনের`);
+    }
+
+    return {
+      morningMsg: morningLines.join("\n"),
+      dinnerMsg: dinnerLines.join("\n")
+    };
+  }
+
+  function renderPreviews(menu) {
+    const { morningMsg, dinnerMsg } = buildQuantityMessages(menu);
+    document.getElementById("morningPreview").innerText = morningMsg;
+    document.getElementById("dinnerPreview").innerText = dinnerMsg;
+  }
+
+  function sendWhatsApp(type, e) {
+    e.preventDefault();
+    const target = getTargetDate(selectedOffset);
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const menu = MENU[days[target.getDay()]];
+    const { morningMsg, dinnerMsg } = buildQuantityMessages(menu);
+
+    const msgToSend = (type === 'morning') ? morningMsg : dinnerMsg;
+    const waUrl = `https://api.whatsapp.com/send?phone=${COOK_PHONE}&text=${encodeURIComponent(msgToSend)}`;
+    window.location.href = waUrl;
+  }
+
+  selectDate(0);
+</script>
+</body>
+</html>
